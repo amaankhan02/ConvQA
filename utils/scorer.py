@@ -1,8 +1,10 @@
 import torch
 import os
 import numpy as np
-from typing import Dict, Any
+from typing import Dict, List, Any
 from transformers import pipeline
+
+from .structures import *
 
 
 class Scorer:
