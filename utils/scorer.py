@@ -58,11 +58,15 @@ class Scorer:
         }
 
     def __call__(self, Y_hat: List[Label], Y: List[Label], save="score.json") -> None:
+        time = [y_hat.time_taken for y_hat in Y_hat]
         scores = {
             "relevance": None,  # TODO: self.relevance(),
             "retrieval": None,  # TODO: self.retrieval(),
             "answer": self.answer(Y_hat, Y),
-            "avg_time": np.mean([y_hat.time_taken for y_hat in Y_hat]),
+            "time": {
+                "average": np.mean(time),
+                "standard_deviation": np.std(time),
+            }
         }
 
         with open(os.path.join(self.fp, save), "w") as f:
