@@ -37,10 +37,10 @@ def eval(prefix, X, Y, docs, method, scorer, fp) -> None:
         print(Y_hat[-1])
 
     # Save generated output
-    with open(os.path.join(fp, f"{prefix}_Y_hat.json"), "w") as f:
+    with open(os.path.join(fp, f"{prefix}Y_hat.json"), "w") as f:
         json.dump(Y_hat, f, indent=4)
 
-    scorer(Y_hat, Y, save=os.path.join(fp, f"{prefix}_eval.json"))
+    scorer(Y_hat, Y, save=os.path.join(fp, f"{prefix}eval.json"))
 
 
 if __name__ == "__main__":
@@ -59,7 +59,6 @@ if __name__ == "__main__":
 
     dataset = Dataset(args.dataset)
 
-    eval("train", dataset.train_X, dataset.train_Y, dataset.docs, method, scorer, fp)
-    eval("test", dataset.test_X, dataset.test_Y, dataset.docs, method, scorer, fp)
+    eval("", dataset.train_X + dataset.test_X, dataset.train_Y + dataset.test_Y, dataset.docs, method, scorer, fp)
 
     print("Finished!")
