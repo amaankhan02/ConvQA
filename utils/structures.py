@@ -27,7 +27,7 @@ class Sample:
 @dataclass
 class Label:
     document_relevant: bool
-    segments: Optional[List[str]]
+    segments: Optional[List[str]]    # 
     answer: Optional[str]
 
     time_taken: Optional[float] = None
