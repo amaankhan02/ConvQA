@@ -60,9 +60,9 @@ class Scorer:
     def __call__(self, Y_hat: List[Label], Y: List[Label], save="score.json") -> None:
         time = [y_hat.time_taken for y_hat in Y_hat]
         scores = {
-            "relevance": None,  # TODO: self.relevance(),
+            "relevance": None,  # TODO: @Amaan self.relevance(),
             # relevance is explained in notion
-            "retrieval": None,  # TODO: self.retrieval(),
+            "retrieval": None,  # TODO: @Amaan self.retrieval(),
             # retrieval is a binary classification task --> did it correctly choose if it should retrieve or not (0 or 1)
             "answer": self.answer(Y_hat, Y),
             "time": {

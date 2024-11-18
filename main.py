@@ -30,15 +30,18 @@ def parse_args() -> Arguments:
     return Arguments(**vars(parser.parse_args()))
 
 
-def eval(prefix, X, Y, docs, method, scorer, fp) -> None:
+def eval(prefix: str, X: List[Sample], Y: List[Label], docs: Dict[str, str], method: ConvRef, scorer: Scorer, fp: str) -> None:
     Y_hat = []
+    yhat_fp = os.path.join(fp, f"{prefix}Y_hat.json")
+    if os.path.exists(yhat_fp):
+        Y_hat = json.load(open(yhat_fp, "r"))
     for x in tqdm(X):
         Y_hat.append(method(x, docs))
         print(Y_hat[-1])
 
-    # Save generated output
-    with open(os.path.join(fp, f"{prefix}Y_hat.json"), "w") as f:
-        json.dump(Y_hat, f, indent=4)
+        # Save generated output
+        with open(os.path.join(fp, yhat_fp, "w") as f:
+            json.dump(Y_hat, f, indent=4)
 
     scorer(Y_hat, Y, save=os.path.join(fp, f"{prefix}eval.json"))
 
@@ -50,15 +53,21 @@ if __name__ == "__main__":
     if args.exp_name:
         fp = os.path.join(fp, args.exp_name)
 
-    method = ConvRef(
-        args.model,
-        no_summary_tree=args.no_summary_tree,
-        no_dialogue_KG=args.no_dialogue_KG,
-    )
+    method = ConvRef(args.model, not args.no_dialogue_KG)
+
     scorer = Scorer(fp)
 
     dataset = Dataset(args.dataset)
 
-    eval("", dataset.train_X + dataset.test_X, dataset.train_Y + dataset.test_Y, dataset.docs, method, scorer, fp)
+    if not args.no_summary_tree:
+        summary_trees_fp = os.path.join(args.dataset, f"summary_trees.json")
+        if not os.path.exists(summary_trees_fp):
+            from transformers import AutoModel
+            model = AutoModel.from_pretrained("jinaai/jina-embeddings-v3", trust_remote_code=True)
+            method.generate_summary_trees(summary_trees_fp, dataset.docs, model)
+        else:
+            method.load_summary_trees(summary_trees_fp)
+
+    eval("", dataset.train_X + dataset.test_X, dataset.train_Y + dataset.test_Y, dataset.docs, method, scorer, fp, args.dialogue_kg_fp)
 
     print("Finished!")
