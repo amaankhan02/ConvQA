@@ -6,6 +6,8 @@ from dataclasses import dataclass, is_dataclass, asdict
 
 class DatasetName(str, Enum):
     MULTIWOZ = "MultiWOZ"
+    QUAC = "QuAC"
+    COQA = "CoQA"
     # TODO: @Amaan Implement more datasets
 
 
@@ -27,7 +29,7 @@ class Sample:
 @dataclass
 class Label:
     document_relevant: bool
-    segments: Optional[List[str]]    # 
+    segments: Optional[List[str]]    #
     answer: Optional[str]
 
     time_taken: Optional[float] = None
