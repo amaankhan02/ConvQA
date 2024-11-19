@@ -58,6 +58,7 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
     # - what exactly is the segments field in multiwoz? and why is it a list? is it just the answer, or the citation?
     # - do i need a segments field and a answer field? or just one is fine? what's the difference?
     # - should I store the span_start in the y_labels?
+    # - what do i do when the answer is CANNOTANSWER? should the document_relevant be false then? should segments be empty?
 
     for article in data["data"]:
         title = article["title"]

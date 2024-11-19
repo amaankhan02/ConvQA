@@ -30,9 +30,23 @@ class Scorer:
         raise NotImplementedError("Not implemented yet.")
 
     def retrieval(self, Y_hat: List[Label], Y: List[Label]) -> Dict[str, Any]:
-        raise NotImplementedError("Not implemented yet.")
+        # TODO: check if this is correct
+        # Compare if the model correctly decided whether to retrieve or not
+        retrieval_scores = []
+        
+        for y_hat, y in zip(Y_hat, Y):
+            if y_hat.document_relevant == y.document_relevant:
+                retrieval_scores.append(1)
+            else:
+                retrieval_scores.append(0)
+
+        return {
+            "accuracy": np.mean(retrieval_scores),
+            "values": retrieval_scores
+        }
 
     def answer(self, Y_hat: List[Label], Y: List[Label]) -> Dict[str, Any]:
+        # TODO: do i have to change this to work with quac?
         answers = []
 
         for y_hat, y in zip(Y_hat, Y):

@@ -163,4 +163,4 @@ cython_debug/
 
 
 # Project Specific Files
-./data/QuAC/
+data/QuAC/*
