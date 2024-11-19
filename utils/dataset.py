@@ -3,10 +3,11 @@ import json
 from typing import Any, Dict, List
 
 from .structures import DatasetName, Sample, Label, DataClassEncoder
-from .data import multiwoz_utils, quac_utils
+from .data import multiwoz_utils, quac_utils, coqa_utils
 from .scorer import Scorer
 
 
+# TODO: put all the filenames in a config file instead of it being literal strings here
 class Dataset:
     def __init__(self, fp: str) -> None:
         """Initialize the dataset.
@@ -32,6 +33,8 @@ class Dataset:
                 self._setup_multiwoz(fp)
             elif os.path.basename(fp) == DatasetName.QUAC:
                 self._setup_quac(fp)
+            elif os.path.basename(fp) == DatasetName.COQA:
+                self._setup_coqa(fp)
             else:
                 raise NotImplementedError("Dataset not supported.")
         else:
@@ -95,16 +98,7 @@ class Dataset:
         )
 
         # Save preprocessed files
-        with open(os.path.join(fp, "docs.json"), "w") as f:
-            json.dump(self._docs, f, cls=DataClassEncoder, indent=4)
-        with open(os.path.join(fp, "train_X.json"), "w") as f:
-            json.dump(self._train_X, f, cls=DataClassEncoder, indent=4)
-        with open(os.path.join(fp, "train_Y.json"), "w") as f:
-            json.dump(self._train_Y, f, cls=DataClassEncoder, indent=4)
-        with open(os.path.join(fp, "test_X.json"), "w") as f:
-            json.dump(self._test_X, f, cls=DataClassEncoder, indent=4)
-        with open(os.path.join(fp, "test_Y.json"), "w") as f:
-            json.dump(self._test_Y, f, cls=DataClassEncoder, indent=4)
+        self._save_preprocessed_files(fp, self._docs, self._train_X, self._train_Y, self._test_X, self._test_Y)
     
     def _setup_quac(self, fp: str) -> None:
         """Helper function to load the original QuAC dataset, preprocess it and save the preprocessed files."""
@@ -119,14 +113,34 @@ class Dataset:
         self._train_X, self._train_Y = quac_utils.get_XY(train_data)
         self._test_X, self._test_Y = quac_utils.get_XY(val_data)
 
+        self._save_preprocessed_files(fp, self._docs, self._train_X, self._train_Y, self._test_X, self._test_Y)
+    
+    def _setup_coqa(self, fp: str) -> None:
+        """Helper function to load the original CoQA dataset, preprocess it and save the preprocessed files."""
+        # Load original data
+        with open(os.path.join(fp, "coqa-train-v1.0.json"), "r") as f:
+            train_data = json.load(f)
+        with open(os.path.join(fp, "coqa-dev-v1.0.json"), "r") as f:
+            val_data = json.load(f)
+            
+        self._docs = coqa_utils.get_docs(train_data)
+        
+        self._train_X, self._train_Y = coqa_utils.get_XY(train_data)
+        self._test_X, self._test_Y = coqa_utils.get_XY(val_data)
+
         # Save preprocessed files
+        self._save_preprocessed_files(fp, self._docs, self._train_X, self._train_Y, self._test_X, self._test_Y)
+    
+    def _save_preprocessed_files(self, fp: str, docs: Dict[str, str], train_X: List[Sample], train_Y: List[Label], test_X: List[Sample], test_Y: List[Label]) -> None:
+        """Helper function to save the preprocessed files."""
         with open(os.path.join(fp, "docs.json"), "w") as f:
-            json.dump(self._docs, f, cls=DataClassEncoder, indent=4)
+            json.dump(docs, f, cls=DataClassEncoder, indent=4)
         with open(os.path.join(fp, "train_X.json"), "w") as f:
-            json.dump(self._train_X, f, cls=DataClassEncoder, indent=4)
+            json.dump(train_X, f, cls=DataClassEncoder, indent=4)
         with open(os.path.join(fp, "train_Y.json"), "w") as f:
-            json.dump(self._train_Y, f, cls=DataClassEncoder, indent=4)
+            json.dump(train_Y, f, cls=DataClassEncoder, indent=4)
         with open(os.path.join(fp, "test_X.json"), "w") as f:
-            json.dump(self._test_X, f, cls=DataClassEncoder, indent=4)
+            json.dump(test_X, f, cls=DataClassEncoder, indent=4)
         with open(os.path.join(fp, "test_Y.json"), "w") as f:
-            json.dump(self._test_Y, f, cls=DataClassEncoder, indent=4)
+            json.dump(test_Y, f, cls=DataClassEncoder, indent=4)
+

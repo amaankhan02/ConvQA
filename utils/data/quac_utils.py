@@ -59,6 +59,7 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
     # - do i need a segments field and a answer field? or just one is fine? what's the difference?
     # - should I store the span_start in the y_labels?
     # - what do i do when the answer is CANNOTANSWER? should the document_relevant be false then? should segments be empty?
+    # - should i put 'user' or 'student' in the role field?
 
     for article in data["data"]:
         title = article["title"]
@@ -78,7 +79,7 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
                 # add the current question to the conversation history
                 conv_history.append(
                     {
-                        "role": "student",
+                        "role": "user",  # TODO: should i put 'user' or 'student'?
                         "content": question,
                         "q_id": qa["id"],  # TODO: do we need this?
                     }
@@ -90,6 +91,7 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
                             doc_id
                         ],  # For QuAC, there is only one relevant context/document, not multiple
                         conversation=conv_history.copy(),
+                        id=qa["id"],
                     )
                 )
 
@@ -101,8 +103,9 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
                         ],  # TODO: is this the answer or the citation?
                         answer=answer["text"],
                         # TODO: should I store the span_start and the question_id in the y_labels?
-                        # id=qa['id'],
-                        # span_start=answer['answer_start'],
+                        q_id=qa["id"],
+                        span_start=answer["answer_start"],
+                        span_end=answer["answer_start"] + len(answer["text"]),
                     )
                 )
 
