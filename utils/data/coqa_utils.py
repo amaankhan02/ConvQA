@@ -2,6 +2,7 @@ from typing import Dict, List, Tuple
 
 from .structures import Label, Sample
 
+ANSWER_DELIM = "||"
 
 def get_docs(data: Dict) -> Dict[str, str]:
     """Extract the documents from CoQA dataset and return as a dictionary
@@ -13,8 +14,6 @@ def get_docs(data: Dict) -> Dict[str, str]:
     Returns:
         Dictionary mapping document IDs to their text content
     """
-    # Questions:
-    # - we can ignore the 'source', 'filename', 'name' fields, right? because we are using the 'id' field to create the doc IDs?
 
     docs = {}
     for item in data["data"]:
@@ -36,13 +35,6 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
         - List of Label objects (Y) with answers
     """
     # Questions:
-    # - should we store input_text and span_text in the Label object?
-    # - what is the additional_answers field? TODO: read on this
-    # - should i put 'user' or 'student' in the role field?
-    # - should i make the question_id (q_id) the turn_id?
-    # - I added a new field called 'id' to the Sample object, is that okay?
-    # - ** In the structures.py, in Sample, why don't we have a question field? or do we just assume the current question in the last qs in the conversation history?
-    # - Why is the document ID not in the Label object?
 
     samples = []
     labels = []
@@ -56,44 +48,47 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
         for qa in item["questions"]:
             questions.append(qa["input_text"])
         for ans in item["answers"]:
-            answers.append(
+            answers.append([
                 {
                     "text": ans[
                         "input_text"
                     ],  # this is the answer text (drawn from the span_text)
-                    "span_start": int(ans["span_start"]),
-                    "span_end": int(ans["span_end"]),
                     "span_text": ans[
                         "span_text"
                     ],  # direct verbatim answer from the context
-                }
+                    
+                    # NOTE: not saving the span_start and span_end for now since we don't need them
+                }]
             )
+            
+        for version in item['additional_answers']:
+            i = 0
+            for curr_answer in item['additional_answers'][version]:
+                answers[i].append({
+                    "text": curr_answer['input_text'],
+                    "span_text": curr_answer['span_text']
+                })
+                i += 1                
 
         # Create samples and labels for each turn in conversation
         conv_history = []
-        turn_id = 1
         for question, answer in zip(questions, answers):
-            conv_history.append({"role": "user", "content": question, "q_id": turn_id})
+            conv_history.append({"role": "user", "content": question})
 
             samples.append(
                 Sample(
                     document_ids=[doc_id],
                     conversation=conv_history.copy(),
-                    id=str(turn_id),
                 )
             )
 
+            is_doc_relevant = True if answer['span_text'] != 'unknown' else False
             labels.append(
                 Label(
-                    document_relevant=True,  # ? It's always relevant for this dataset, right?
+                    document_relevant=is_doc_relevant,
                     segments=[answer["span_text"]],
-                    answer=answer["text"],
-                    q_id=str(turn_id),
-                    span_start=answer["span_start"],
-                    span_end=answer["span_end"],
+                    answer=ANSWER_DELIM.join([ans["text"] for ans in answer]),
                 )
             )
-
-            turn_id += 1
 
     return samples, labels
