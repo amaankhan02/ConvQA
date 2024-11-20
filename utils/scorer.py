@@ -30,7 +30,19 @@ class Scorer:
         raise NotImplementedError("Not implemented yet.")
 
     def retrieval(self, Y_hat: List[Label], Y: List[Label]) -> Dict[str, Any]:
-        raise NotImplementedError("Not implemented yet.")
+        # Compare if the model correctly decided whether to retrieve or not
+        retrieval_scores = []
+        
+        for y_hat, y in zip(Y_hat, Y):
+            if y_hat.document_relevant == y.document_relevant:
+                retrieval_scores.append(1)
+            else:
+                retrieval_scores.append(0)
+
+        return {
+            "accuracy": np.mean(retrieval_scores),
+            "values": retrieval_scores
+        }
 
     def answer(self, Y_hat: List[Label], Y: List[Label]) -> Dict[str, Any]:
         answers = []
@@ -61,7 +73,9 @@ class Scorer:
         time = [y_hat["time_taken"] for y_hat in Y_hat]
         scores = {
             "relevance": None,  # TODO: @Amaan self.relevance(),
+            # relevance is explained in notion
             "retrieval": None,  # TODO: @Amaan self.retrieval(),
+            # retrieval is a binary classification task --> did it correctly choose if it should retrieve or not (0 or 1)
             "answer": self.answer(Y_hat, Y),
             "time": {
                 "average": np.mean(time),

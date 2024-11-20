@@ -6,7 +6,8 @@ from dataclasses import dataclass, is_dataclass, asdict
 
 class DatasetName(str, Enum):
     MULTIWOZ = "MultiWOZ"
-    # TODO: @Amaan Implement more datasets
+    QUAC = "QuAC"
+    COQA = "CoQA"
 
 
 @dataclass
@@ -30,7 +31,7 @@ class Label:
     segments: Optional[List[str]]
     answer: Optional[str]
 
-    time_taken: Optional[float] = None
+    time_taken: Optional[float] = None  # How long it takes to answer the question
 
 
 class DataClassEncoder(json.JSONEncoder):
