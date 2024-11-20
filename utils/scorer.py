@@ -58,7 +58,7 @@ class Scorer:
         }
 
     def __call__(self, Y_hat: List[Label], Y: List[Label], save="score.json") -> None:
-        time = [y_hat.time_taken for y_hat in Y_hat]
+        time = [y_hat["time_taken"] for y_hat in Y_hat]
         scores = {
             "relevance": None,  # TODO: @Amaan self.relevance(),
             "retrieval": None,  # TODO: @Amaan self.retrieval(),

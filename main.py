@@ -35,13 +35,15 @@ def eval(prefix: str, X: List[Sample], Y: List[Label], docs: Dict[str, str], met
     yhat_fp = os.path.join(fp, f"{prefix}Y_hat.json")
     if os.path.exists(yhat_fp):
         Y_hat = json.load(open(yhat_fp, "r"))
-    for x in tqdm(X):
+    for i, x in tqdm(enumerate(X)):
+        if i < len(Y_hat):
+            continue
         Y_hat.append(method(x, docs))
         print(Y_hat[-1])
 
         # Save generated output
-        with open(os.path.join(fp, yhat_fp, "w") as f:
-            json.dump(Y_hat, f, indent=4)
+        with open(yhat_fp, "w") as f:
+            json.dump(Y_hat, f, cls=DataClassEncoder, indent=4)
 
     scorer(Y_hat, Y, save=os.path.join(fp, f"{prefix}eval.json"))
 
@@ -67,7 +69,6 @@ if __name__ == "__main__":
             method.generate_summary_trees(summary_trees_fp, dataset.docs, model)
         else:
             method.load_summary_trees(summary_trees_fp)
-
-    eval("", dataset.train_X + dataset.test_X, dataset.train_Y + dataset.test_Y, dataset.docs, method, scorer, fp, args.dialogue_kg_fp)
+    eval("", dataset.train_X + dataset.test_X, dataset.train_Y + dataset.test_Y, dataset.docs, method, scorer, fp)
 
     print("Finished!")

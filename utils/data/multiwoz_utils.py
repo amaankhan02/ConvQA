@@ -55,11 +55,10 @@ def get_XY(
             # Is new conversation
             dialogue = []
             documents = []
-
-        role = "user"
-        if log[-1]["speaker"] == "S":
-            role = "assistant"
-        dialogue.append({"role": role, "content": log[-1]["text"]})
+        if len(log) > 1:
+            assert log[-2]["speaker"] == "S"
+            dialogue.append({"role": "assistant", "content": log[-2]["text"]})
+        dialogue.append({"role": "user", "content": log[-1]["text"]})
 
         turn_documents = label.get("knowledge", [])
         documents.extend(

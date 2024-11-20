@@ -5,6 +5,7 @@ from transformers import pipeline
 
 from .structures import *
 from .graph.summary_tree import SummaryTree
+from .response import affirmative_resp
 
 
 class ConvRef:
@@ -53,14 +54,14 @@ class ConvRef:
                 history = [
                     {
                         "role": "system",
-                        "content": f"You are a helpful assistant. If needed, refer to the following provided document(s) to answer questions: {doc_context}",
+                        "content": f"You are a helpful assistant. If needed, refer to the following provided document(s) to answer questions. Answer each question by quoting from the document. Documents: {doc_context}",
                     }
                 ] + X.conversation
 
                 relevance_convo = history + [
                     {
                         "role": "user",
-                        "content": "Are the provided document(s) relevant to answer the above question?',
+                        "content": "Are the provided document(s) relevant to answer the above question?",
                     }
                 ]
                 document_relevant = affirmative_resp(self.model, relevance_convo)
@@ -71,7 +72,7 @@ class ConvRef:
                     )
                     answer = outputs[0]["generated_text"][-1]["content"]
             else:
-            raise Exception(f"Combination not supported:\n\tSummary Tree: {self.summary_trees is not None}\n\tDialogue KG: {self.use_dialogue_kg}")
+                raise Exception(f"Combination not supported:\n\tSummary Tree: {self.summary_trees is not None}\n\tDialogue KG: {self.use_dialogue_kg}")
         else:  # self.use_dialogue_kg is True
             relevant_segments = []
             # - Given entities and relations, ask LLM to construct knowledge graph edge.
@@ -81,6 +82,7 @@ class ConvRef:
             if self.entities and self.relations:
                 # Ask LLM to construct KG edge
                 # Try to find on KG
+                pass
                 
             # If no relevant document segments, look at document (tree)
             if not relevant_segments and self.summary_trees:
@@ -110,7 +112,7 @@ class ConvRef:
                 #             - For each sentence, expand context until sure whether it is relevant or max size reached.
                 #                 - If still undecided, reject.
                 # - For all segments that are decided as relevant (if segment is expanded to decide, use the expanded version of the segment), add it to the context for deciding on the answer
-            
+                pass
             # Add edge associated with each relevant segment
             # Answer based on context
         return Label(
@@ -131,4 +133,4 @@ class ConvRef:
             
             with open(summary_trees_fp, "w") as f:
                 json.dump({k: v.to_dict() for k, v in summary_trees.items()}, f, indent=4)
-            self.summary_trees = summary_trees
+        self.summary_trees = summary_trees
