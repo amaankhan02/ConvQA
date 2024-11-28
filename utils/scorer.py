@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, List, Any
 from transformers import pipeline
 
-from .structures import *
+from utils.structures import *
 from utils.data.squad_eval import compute_f1
 from utils.constants import ANSWER_DELIM
 

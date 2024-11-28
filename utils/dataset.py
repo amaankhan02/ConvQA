@@ -2,9 +2,9 @@ import json
 import os
 from typing import Any, Dict, List
 
-from .data import coqa_utils, multiwoz_utils, quac_utils
-from .scorer import Scorer
-from .structures import DataClassEncoder, DatasetName, Label, Sample
+from utils.data import coqa_utils, multiwoz_utils, quac_utils
+from utils.scorer import Scorer
+from utils.structures import DataClassEncoder, DatasetName, Label, Sample
 
 
 # TODO: put all the filenames in a config file instead of it being literal strings here
