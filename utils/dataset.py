@@ -103,9 +103,9 @@ class Dataset:
     def _setup_quac(self, fp: str) -> None:
         """Helper function to load the original QuAC dataset, preprocess it and save the preprocessed files."""
         # Load original data
-        with open(os.path.join(fp, "quac_train_v0.2.json"), "r") as f:
+        with open(os.path.join(fp, "train_v0.2.json"), "r") as f:
             train_data = json.load(f)
-        with open(os.path.join(fp, "quac_val_v0.2.json"), "r") as f:
+        with open(os.path.join(fp, "val_v0.2.json"), "r") as f:
             val_data = json.load(f)
 
         self._docs = quac_utils.get_docs(train_data)
