@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple
 
-from .structures import Label, Sample
+from utils.structures import Label, Sample
 
 ANSWER_DELIM = "||"
 
@@ -71,8 +71,7 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
                     Sample(
                         # For QuAC, there is only one relevant context/document, not multiple
                         document_ids=[doc_id],
-                        conversation=conv_history.copy(),
-                        id=qa["id"],
+                        conversation=conv_history.copy()
                     )
                 )
 

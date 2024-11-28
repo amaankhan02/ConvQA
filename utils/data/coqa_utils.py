@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple
 
-from .structures import Label, Sample
+from utils.structures import Label, Sample
 
 ANSWER_DELIM = "||"
 
@@ -42,13 +42,13 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
     for item in data["data"]:
         doc_id = str(item["id"])
         questions = []
-        answers = []
+        all_answers = []    # 2d array. all_answers[i] = list of answers for question[i]. all_answers[i][j] represents the jth possible valid answer for the ith question
 
         # Extract QA pairs from conversation
         for qa in item["questions"]:
             questions.append(qa["input_text"])
         for ans in item["answers"]:
-            answers.append([
+            all_answers.append([
                 {
                     "text": ans[
                         "input_text"
@@ -61,18 +61,20 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
                 }]
             )
             
-        for version in item['additional_answers']:
-            i = 0
-            for curr_answer in item['additional_answers'][version]:
-                answers[i].append({
-                    "text": curr_answer['input_text'],
-                    "span_text": curr_answer['span_text']
-                })
-                i += 1                
+        # Add check for additional_answers key
+        if 'additional_answers' in item:
+            for version in item['additional_answers']:
+                i = 0
+                for curr_answer in item['additional_answers'][version]:
+                    all_answers[i].append({
+                        "text": curr_answer['input_text'],
+                        "span_text": curr_answer['span_text']
+                    })
+                    i += 1                
 
         # Create samples and labels for each turn in conversation
         conv_history = []
-        for question, answer in zip(questions, answers):
+        for question, curr_qs_answers in zip(questions, all_answers):
             conv_history.append({"role": "user", "content": question})
 
             samples.append(
@@ -80,14 +82,13 @@ def get_XY(data: Dict) -> Tuple[List[Sample], List[Label]]:
                     document_ids=[doc_id],
                     conversation=conv_history.copy(),
                 )
-            )
-
-            is_doc_relevant = True if answer['span_text'] != 'unknown' else False
+            )            
+                
             labels.append(
                 Label(
-                    document_relevant=is_doc_relevant,
-                    segments=[answer["span_text"]],
-                    answer=ANSWER_DELIM.join([ans["text"] for ans in answer]),
+                    document_relevant=any([curr_ans['span_text'] != 'unknown' for curr_ans in curr_qs_answers]),
+                    segments=[curr_ans["span_text"] for curr_ans in curr_qs_answers],
+                    answer=ANSWER_DELIM.join([curr_ans["text"] for curr_ans in curr_qs_answers]),
                 )
             )
 
