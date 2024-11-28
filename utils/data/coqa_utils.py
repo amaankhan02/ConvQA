@@ -1,8 +1,7 @@
 from typing import Dict, List, Tuple
 
 from utils.structures import Label, Sample
-
-ANSWER_DELIM = "||"
+from utils.constants import ANSWER_DELIM
 
 def get_docs(data: Dict) -> Dict[str, str]:
     """Extract the documents from CoQA dataset and return as a dictionary

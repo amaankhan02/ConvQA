@@ -1,8 +1,7 @@
 from typing import Dict, List, Tuple
 
 from utils.structures import Label, Sample
-
-ANSWER_DELIM = "||"
+from utils.constants import ANSWER_DELIM
 
 def create_unique_doc_id(title: str, context: str) -> str:
     """Create a unique document ID using the title and first few words of the context."""

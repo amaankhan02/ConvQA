@@ -1,7 +1,7 @@
 import json
-from typing import Dict, List, Optional, Any
+from dataclasses import asdict, dataclass, is_dataclass
 from enum import Enum
-from dataclasses import dataclass, is_dataclass, asdict
+from typing import Any, Dict, List, Optional
 
 
 class DatasetName(str, Enum):
@@ -29,6 +29,9 @@ class Sample:
 class Label:
     document_relevant: bool
     segments: Optional[List[str]]
+
+    # For multiple answers we use a delimiter of ANSWER_DELIM to join them.
+    # the first answer (if separated b/w the delim) is considered the "best" answer
     answer: Optional[str]
 
     time_taken: Optional[float] = None  # How long it takes to answer the question

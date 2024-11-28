@@ -5,7 +5,8 @@ from typing import Dict, List, Any
 from transformers import pipeline
 
 from .structures import *
-
+from utils.data.squad_eval import compute_f1
+from utils.constants import ANSWER_DELIM
 
 class Scorer:
     def __init__(
@@ -27,7 +28,32 @@ class Scorer:
         os.makedirs(self.fp, exist_ok=True)
 
     def relevance(self, Y_hat: List[Label], Y: List[Label]) -> Dict[str, Any]:
-        raise NotImplementedError("Not implemented yet.")
+        """
+        Calculate word-level F1 scores between predicted and ground truth answers
+        when documents are marked as relevant.
+        """
+        f1_scores = []
+        
+        for y_hat, y in zip(Y_hat, Y):
+            # Only evaluate F1 when both predict document is relevant
+            # If either predicts document not relevant, F1 score is 0
+            # If both predict document relevant but no answer for either, then F1 score is 0
+            both_docs_relevant = y_hat.document_relevant and y.document_relevant
+            both_have_answer = y_hat.answer is not None and y.answer is not None
+            curr_f1_score = 0.0
+            
+            if both_docs_relevant and both_have_answer:
+                # TODO: do i only use the first answer or all of them with the delimiter splitted? for now, we use the first answer only
+                y_ans = y.answer.split(ANSWER_DELIM)[0]
+                y_hat_ans = y_hat.answer.split(ANSWER_DELIM)[0]
+                curr_f1_score = float(compute_f1(y_ans, y_hat_ans))
+            
+            f1_scores.append(curr_f1_score)
+                
+        return {
+            "f1": np.mean(f1_scores),
+            "values": f1_scores
+        }
 
     def retrieval(self, Y_hat: List[Label], Y: List[Label]) -> Dict[str, Any]:
         # Compare if the model correctly decided whether to retrieve or not
@@ -74,7 +100,7 @@ class Scorer:
         scores = {
             "relevance": None,  # TODO: @Amaan self.relevance(),
             # relevance is explained in notion
-            "retrieval": None,  # TODO: @Amaan self.retrieval(),
+            "retrieval": self.retrieval(Y_hat, Y),
             # retrieval is a binary classification task --> did it correctly choose if it should retrieve or not (0 or 1)
             "answer": self.answer(Y_hat, Y),
             "time": {
