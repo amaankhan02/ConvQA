@@ -6,6 +6,7 @@ from utils.structures import *
 from utils.dataset import Dataset
 from utils.method import ConvRef
 from utils.scorer import Scorer
+from utils.evaluate import run_inference_and_evaluate
 
 
 def parse_args() -> Arguments:
@@ -28,24 +29,6 @@ def parse_args() -> Arguments:
     parser.add_argument("--exp_name", default="", type=str)
 
     return Arguments(**vars(parser.parse_args()))
-
-
-def eval(prefix: str, X: List[Sample], Y: List[Label], docs: Dict[str, str], method: ConvRef, scorer: Scorer, fp: str) -> None:
-    Y_hat = []
-    yhat_fp = os.path.join(fp, f"{prefix}Y_hat.json")
-    if os.path.exists(yhat_fp):
-        Y_hat = json.load(open(yhat_fp, "r"))
-    for i, x in tqdm(enumerate(X)):
-        if i < len(Y_hat):
-            continue
-        Y_hat.append(method(x, docs))
-        print(Y_hat[-1])
-
-        # Save generated output
-        with open(yhat_fp, "w") as f:
-            json.dump(Y_hat, f, cls=DataClassEncoder, indent=4)
-
-    scorer(Y_hat, Y, save=os.path.join(fp, f"{prefix}eval.json"))
 
 
 if __name__ == "__main__":
@@ -81,6 +64,8 @@ if __name__ == "__main__":
             method.generate_summary_trees(summary_trees_fp, dataset.docs, model)
         else:
             method.load_summary_trees(summary_trees_fp)
-    eval("", dataset.train_X + dataset.test_X, dataset.train_Y + dataset.test_Y, dataset.docs, method, scorer, fp)
+            
+    print("Running inference and evaluation...")
+    run_inference_and_evaluate("", dataset.train_X + dataset.test_X, dataset.train_Y + dataset.test_Y, dataset.docs, method, scorer, fp)
 
     print("Finished!")
