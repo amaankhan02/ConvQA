@@ -31,7 +31,7 @@ class ConvRef:
         self.i2e = {}
         self.i2r = {}
         self.edge_to_excerpt = defaultdict(list)
-    
+
     def _extract_keyword_context(self, document: str, keyword: str, context_size: int = 100) -> list:
         """
         Extracts a specified number of characters around each occurrence of a keyword in the document.
@@ -74,7 +74,7 @@ class ConvRef:
             self.i2e = {}
             self.i2r = {}
             self.edge_to_excerpt = defaultdict(list)
-            
+
         start = time.time()
         final_query = X.conversation[-1]["content"]
         relevance_eval = [
@@ -128,18 +128,21 @@ class ConvRef:
                 history = [
                     {
                         "role": "user",
-                        "content": (f"Given the following list of entities and relations, please translate the following query in "
-                                  f"subject_entity|relation|tail_entity form. Do not include anything else. \n"
-                                  f"Query: {final_query}\n"
-                                  f"Entities: {'\n'.join(self.e2i.keys())}\n"
-                                  f"Relations: {'\n'.join(self.r2i.keys())}")
+                        "content": (
+                            "Given the following list of entities and relations, please translate the following query in "
+                            "subject_entity|relation|tail_entity form. Do not include anything else.\n"
+                            f"Query: {final_query}\n"
+                            "Entities: " + "\n".join(list(self.e2i.keys())) + "\n"
+                            "Relations: " + "\n".join(list(self.r2i.keys()))
+                        )
                     }
                 ]
+
                 outputs = self.model(history, max_new_tokens=64)
                 response = outputs[0]["generated_text"][-1]["content"].lower()
                 if response in self.edge_to_excerpt:
                     relevant_segments = self.edge_to_excerpt[response]
-                
+
             # If no relevant document segments, look at document (tree)
             if len(relevant_segments) < 1 and self.summary_trees:
                 current_nodes = [self.summary_trees[doc_id].root for doc_id in X.document_ids]
@@ -176,7 +179,7 @@ class ConvRef:
                     for doc_id in X.document_ids:
                         preprocessed_document = "".join([c for c in docs[doc_id].lower() if c.isalpha() or c.isspace()])
                         relevant_segments.extend(self._extract_keyword_context(document=preprocessed_document, keyword=keyword))
-            
+
             # Answer based on context
             if relevant_segments:
                 document_relevant = True
@@ -191,7 +194,7 @@ class ConvRef:
 
                 # Add edge associated with each relevant segment
                 edges = segments_to_edges(self.model, relevant_segments, self.e2i, self.r2i, self.i2e, self.i2r, self.edge_to_excerpt)
-                
+
         return Label(
             document_relevant=document_relevant,
             segments=segments,
@@ -201,16 +204,16 @@ class ConvRef:
 
     def load_summary_trees(self, summary_trees_fp: str) -> None:
         self.summary_trees = {
-            k: SummaryTree.from_dict(v) 
+            k: SummaryTree.from_dict(v)
             for k, v in json.load(open(summary_trees_fp, "r")).items()
-        } 
+        }
 
     def generate_summary_trees(self, summary_trees_fp: str, docs: Dict[str, str], emb_model: Any) -> None:
         summary_trees = {}
         for doc_id, doc in tqdm(docs.items()):
             summary_trees[doc_id] = SummaryTree(None)
             summary_trees[doc_id].generate_from(doc, self.model, emb_model)
-            
+
             with open(summary_trees_fp, "w") as f:
                 json.dump({k: v.to_dict() for k, v in summary_trees.items()}, f, indent=4)
         self.summary_trees = summary_trees
