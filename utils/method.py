@@ -129,11 +129,11 @@ class ConvRef:
                     {
                         "role": "user",
                         "content": (
-                            f"Given the following list of entities and relations, please translate the following query in "
+                            "Given the following list of entities and relations, please translate the following query in "
                             "subject_entity|relation|tail_entity form. Do not include anything else.\n"
                             f"Query: {final_query}\n"
-                            f"Entities: {'\n'.join(self.e2i.keys())}\n"
-                            f"Relations: {'\n'.join(self.r2i.keys())}"
+                            f"Entities: {'\n'.join(list(self.e2i.keys()))}\n"
+                            f"Relations: {'\n'.join(list(self.r2i.keys()))}"
                         )
                     }
                 ]
