@@ -132,8 +132,8 @@ class ConvRef:
                             "Given the following list of entities and relations, please translate the following query in "
                             "subject_entity|relation|tail_entity form. Do not include anything else.\n"
                             f"Query: {final_query}\n"
-                            f"Entities: {'\n'.join(list(self.e2i.keys()))}\n"
-                            f"Relations: {'\n'.join(list(self.r2i.keys()))}"
+                            "Entities: " + "\n".join(list(self.e2i.keys())) + "\n"
+                            "Relations: " + "\n".join(list(self.r2i.keys()))
                         )
                     }
                 ]
