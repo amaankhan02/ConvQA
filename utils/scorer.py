@@ -46,7 +46,7 @@ class Scorer:
             if both_docs_relevant and both_have_answer:
                 # TODO: do i only use the first answer or all of them with the delimiter splitted? for now, we use the first answer only
                 y_ans = y.answer.split(ANSWER_DELIM)[0]
-                y_hat_ans = y_hat.answer.split(ANSWER_DELIM)[0]
+                y_hat_ans = y_hat.answer
                 curr_f1_score = float(compute_f1(y_ans, y_hat_ans))
             
             f1_scores.append(curr_f1_score)
