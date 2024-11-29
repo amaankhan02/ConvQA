@@ -11,7 +11,7 @@ from utils.scorer import Scorer
 def parse_args() -> Arguments:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--model", default="meta-llama/Llama-3.1-8B-Instruct", type=str)
+    parser.add_argument("--model", default="meta-llama/Llama-3.2-3B-Instruct", type=str)
 
     parser.add_argument(
         "--dataset",
@@ -51,15 +51,27 @@ def eval(prefix: str, X: List[Sample], Y: List[Label], docs: Dict[str, str], met
 if __name__ == "__main__":
     args = parse_args()
 
+    # fp = "/home/ecchan2/ConvQA/results/Llama-3.1-8B-Instruct_llm_only/"
+    # prefix = ""
+
+    # dataset = Dataset(args.dataset)
+    # yhat_fp = os.path.join(fp, f"{prefix}Y_hat.json")
+    # if os.path.exists(yhat_fp):
+    #     Y_hat = json.load(open(yhat_fp, "r"))
+    # Y = dataset.train_Y + dataset.test_Y
+    # scorer = Scorer(fp)
+    # scorer(Y_hat, Y, save=os.path.join(fp, f"{prefix}eval.json"))
+    # exit()
+
     fp = "results"
     if args.exp_name:
         fp = os.path.join(fp, args.exp_name)
 
+    dataset = Dataset(args.dataset)
+
     method = ConvRef(args.model, not args.no_dialogue_KG)
 
     scorer = Scorer(fp)
-
-    dataset = Dataset(args.dataset)
 
     if not args.no_summary_tree:
         summary_trees_fp = os.path.join(args.dataset, f"summary_trees.json")

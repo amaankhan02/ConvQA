@@ -1,6 +1,7 @@
 import torch
 import os
 import numpy as np
+from tqdm import tqdm
 from typing import Dict, List, Any
 from transformers import pipeline
 
@@ -35,7 +36,7 @@ class Scorer:
     def answer(self, Y_hat: List[Label], Y: List[Label]) -> Dict[str, Any]:
         answers = []
 
-        for y_hat, y in zip(Y_hat, Y):
+        for y_hat, y in tqdm(zip(Y_hat, Y)):
             prompt = [
                 {
                     "role": "user",
@@ -58,7 +59,7 @@ class Scorer:
         }
 
     def __call__(self, Y_hat: List[Label], Y: List[Label], save="score.json") -> None:
-        time = [y_hat["time_taken"] for y_hat in Y_hat]
+        time = [y_hat.time_taken for y_hat in Y_hat]
         scores = {
             "relevance": None,  # TODO: @Amaan self.relevance(),
             "retrieval": None,  # TODO: @Amaan self.retrieval(),
