@@ -184,7 +184,7 @@ class ConvRef:
                 history = [
                     {
                         "role": "system",
-                        "content": f"Use the following documents to answer the question:\n" + "\n".join([f"<div>{segment}</div>" for segment in relevant_segments]),
+                        "content": "Use the following documents to answer the question:\n" + "\n".join([f"<div>{segment}</div>" for segment in relevant_segments]),
                     },
                 ] + X.conversation
                 answer = self.model(history, max_new_tokens=256)[0]["generated_text"][-1]["content"]
