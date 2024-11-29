@@ -5,3 +5,4 @@ tqdm==4.67.0
 transformers==4.46.2
 kneed==0.8.5
 scikit-learn==1.5.2
+accelerate>=0.26.0
