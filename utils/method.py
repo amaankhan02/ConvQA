@@ -128,9 +128,12 @@ class ConvRef:
                 history = [
                     {
                         "role": "user",
-                        "content": f"Given the following list of entities and relations, please translate the following query in subject_entity|relation|tail_entity form. Do not include anything else. \nQuery:{final_query}\nEntities:{'\n'.join(self.e2i.keys())}\nRelations:{'\n'.join(self.r2i.keys())}",
+                        "content": (f"Given the following list of entities and relations, please translate the following query in "
+                                  f"subject_entity|relation|tail_entity form. Do not include anything else. \n"
+                                  f"Query: {final_query}\n"
+                                  f"Entities: {'\n'.join(self.e2i.keys())}\n"
+                                  f"Relations: {'\n'.join(self.r2i.keys())}")
                     }
-
                 ]
                 outputs = self.model(history, max_new_tokens=64)
                 response = outputs[0]["generated_text"][-1]["content"].lower()
