@@ -45,7 +45,7 @@ def get_XY(
         if len(log) == 1:
             # Update X
             documents = list(set(documents))
-            for i in range(1, len(dialogue) + 1):
+            for i in range(1, len(dialogue) + 1, 2):
                 X.append(
                     Sample(
                         document_ids=documents,
@@ -90,7 +90,7 @@ def get_XY(
 
     # Update X
     documents = list(set(documents))
-    for i in range(1, len(dialogue) + 1):
+    for i in range(1, len(dialogue) + 1, 2):
         X.append(
             Sample(
                 document_ids=documents,

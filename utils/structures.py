@@ -15,7 +15,7 @@ class Arguments:
     model: str
     dataset: str
     no_summary_tree: bool
-    no_dialogue_KG: bool
+    llm_only: bool
     exp_name: str
 
 

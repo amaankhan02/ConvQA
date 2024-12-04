@@ -109,6 +109,7 @@ class Dataset:
             val_data = json.load(f)
 
         self._docs = quac_utils.get_docs(train_data)
+        self._docs.update(quac_utils.get_docs(val_data))
 
         self._train_X, self._train_Y = quac_utils.get_XY(train_data)
         self._test_X, self._test_Y = quac_utils.get_XY(val_data)
@@ -126,6 +127,7 @@ class Dataset:
             val_data = json.load(f)
 
         self._docs = coqa_utils.get_docs(train_data)
+        self._docs.update(coqa_utils.get_docs(val_data))
 
         self._train_X, self._train_Y = coqa_utils.get_XY(train_data)
         self._test_X, self._test_Y = coqa_utils.get_XY(val_data)

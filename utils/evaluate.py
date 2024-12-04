@@ -31,16 +31,18 @@ def run_inference_and_evaluate(
     Y_hat = []
     yhat_fp = os.path.join(fp, f"{prefix}Y_hat.json")
     if os.path.exists(yhat_fp):
-        Y_hat = json.load(open(yhat_fp, "r"))
+        json_out = json.load(open(yhat_fp, "r"))
+        if json_out:
+            Y_hat = [Label(**val) for val in json_out]
     
     for i, x in tqdm(enumerate(X)):
         if i < len(Y_hat):
             continue
         Y_hat.append(method(x, docs))
-        print(Y_hat[-1])
+        print(i, len(X), Y_hat[-1])
 
         # Save generated output
         with open(yhat_fp, "w") as f:
             json.dump(Y_hat, f, cls=DataClassEncoder, indent=4)
 
-    scorer(Y_hat, Y, save=os.path.join(fp, f"{prefix}eval.json"))
+    scorer(X, Y_hat, Y, save=os.path.join(fp, f"{prefix}eval.json"))
