@@ -135,11 +135,8 @@ class ConvRef:
             time_taken=time.time() - start,
         )
     
-    def _run_ours_approach(self, X: Sample, docs: Dict[str, str], start: float, doc_context: str) -> Label:
-        final_query = X.conversation[-1]["content"]
-        segments = None
-        answer = None
-        
+    def _get_relevant_segments(self, X: Sample, docs: Dict[str, str], doc_context: str) -> List[str]:
+        """Helper function to get the key excerpts (relevant segments) from the passage"""
         # Identify potential keywords that relate to the query.
         keywords = list_words(
             self.model,
@@ -166,6 +163,20 @@ class ConvRef:
                             )
                         )
         relevant_segments = self._remove_near_duplicates(relevant_segments)
+        return relevant_segments
+    
+    def _run_ours_approach(self, X: Sample, docs: Dict[str, str], start: float, doc_context: str) -> Label:
+        final_query = X.conversation[-1]["content"]
+        segments = None
+        answer = None
+        
+        # Stage 1: Key Excerpts Selection
+        if self.use_gt_segments:
+            relevant_segments = X.segments
+        else:
+            relevant_segments = self._get_relevant_segments(X, docs, doc_context)
+        
+        # Stage 2: Relevancy Check (identify if the document is relevant)
         if len(relevant_segments) < 1:
             document_relevant = False
         else:
@@ -173,7 +184,7 @@ class ConvRef:
                 [f"<div>{segment}</div>" for segment in relevant_segments]
             )
             document_relevant = True
-            if self.strict:
+            if self.strict:   # Perform extra step for the Ours_step approach (ask the LLM if the document is relevant)
                 document_relevant = affirmative_resp(
                     self.model,
                     [X.conversation[-1]]
@@ -208,7 +219,7 @@ class ConvRef:
                 time_taken=time.time() - start,
         )
         
-    def __call__(self, X: Sample, docs: Dict[str, str]) -> Label:
+    def __call__(self, X: Sample, docs: Dict[str, str], Y: Label = None) -> Label:
         start = time.time()
         doc_context = "\n".join(
             [f"<div>{docs[doc_id]}</div>" for doc_id in X.document_ids]
