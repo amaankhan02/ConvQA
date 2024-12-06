@@ -38,7 +38,7 @@ class ConvRef:
         self.summary_trees = None
         self.llm_only = llm_only
         self.strict = strict
-        
+
         # Ablation flags
         self.use_gt_segments = use_gt_segments
         self.use_gt_doc_relevancy = use_gt_doc_relevancy
@@ -91,13 +91,15 @@ class ConvRef:
 
         return results
 
-    def _run_llm_only_approach(self, X: Sample, docs: Dict[str, str], start: float) -> Label:
+    def _run_llm_only_approach(
+        self, X: Sample, docs: Dict[str, str], start: float
+    ) -> Label:
         history = [
-                {
-                    "role": "system",
-                    "content": f"You are a helpful assistant. If needed, refer to the following provided document(s) to answer questions. Documents: {doc_context}",
-                }
-            ] + X.conversation
+            {
+                "role": "system",
+                "content": f"You are a helpful assistant. If needed, refer to the following provided document(s) to answer questions. Documents: {doc_context}",
+            }
+        ] + X.conversation
         document_relevant = affirmative_resp(
             self.model,
             history
@@ -128,8 +130,10 @@ class ConvRef:
             answer=answer,
             time_taken=time.time() - start,
         )
-    
-    def _get_relevant_segments(self, X: Sample, docs: Dict[str, str], doc_context: str, final_query: str) -> List[str]:
+
+    def _get_relevant_segments(
+        self, X: Sample, docs: Dict[str, str], doc_context: str, final_query: str
+    ) -> List[str]:
         """Helper function to get the key excerpts (relevant segments) from the passage. Stage 1 of the Ours approach."""
         # Identify potential keywords that relate to the query.
         keywords = list_words(
@@ -159,13 +163,17 @@ class ConvRef:
         relevant_segments = self._remove_near_duplicates(relevant_segments)
         return relevant_segments
 
-    def _determine_document_relevancy(self, X: Sample, relevant_segments: List[str]) -> bool:
+    def _determine_document_relevancy(
+        self, X: Sample, relevant_segments: List[str]
+    ) -> bool:
         """Helper function to determine if the document is relevant based on the key excerpts. Stage 2 of the Ours approach."""
         excerpt_context = "\n".join(
             [f"<div>{segment}</div>" for segment in relevant_segments]
         )
-        
-        if self.strict:   # Ours_strict approach (ask the LLM if the document is relevant)
+
+        if (
+            self.strict
+        ):  # Ours_strict approach (ask the LLM if the document is relevant)
             document_relevant = affirmative_resp(
                 self.model,
                 [X.conversation[-1]]
@@ -176,14 +184,16 @@ class ConvRef:
                     }
                 ],
             )
-        else:   # Ours_lax approach (assume the document is relevant)
-            document_relevant = True 
-            
+        else:  # Ours_lax approach (assume the document is relevant)
+            document_relevant = True
+
         return document_relevant
 
-    def _generate_response(self, X: Sample, relevant_segments: List[str], docs: Dict[str, str]) -> str:
+    def _generate_response(
+        self, X: Sample, relevant_segments: List[str], docs: Dict[str, str]
+    ) -> str:
         """Helper function to generate the response. Stage 3 of the Ours approach."""
-        
+
         segments = relevant_segments
         history = [
             {
@@ -200,40 +210,44 @@ class ConvRef:
         for doc_id in X.document_ids:
             if answer in docs[doc_id]:
                 segments = [answer]
-        
+
         return answer, segments
-    
-    def _run_ours_approach(self, X: Sample, docs: Dict[str, str], start: float, doc_context: str, Y: Label) -> Label:
-        """Main function to run the Ours approach."""        
+
+    def _run_ours_approach(
+        self, X: Sample, docs: Dict[str, str], start: float, doc_context: str, Y: Label
+    ) -> Label:
+        """Main function to run the Ours approach."""
         # Stage 1: Key Excerpts Selection
         if self.use_gt_segments:
             relevant_segments = Y.segments
         else:
             final_query = X.conversation[-1]["content"]
-            relevant_segments = self._get_relevant_segments(X, docs, doc_context, final_query)
-        
+            relevant_segments = self._get_relevant_segments(
+                X, docs, doc_context, final_query
+            )
+
         # Stage 2: Relevancy Check (identify if the document is relevant)
         if len(relevant_segments) == 0:
-            document_relevant = False   # always set it to False when relevant_segments is empty
+            document_relevant = (
+                False  # always set it to False when relevant_segments is empty
+            )
         elif self.use_gt_doc_relevancy:
             document_relevant = Y.document_relevant
         else:  # otherwise, determine relevancy based on the key excerpts (Our Approach)
             document_relevant = self._determine_document_relevancy(X, relevant_segments)
-        
-        
+
         # Stage 3: Response Generation
-        answer, segments = None, None        
+        answer, segments = None, None
         if document_relevant:
             answer, segments = self._generate_response(X, relevant_segments, docs)
-        
+
         return Label(
             document_relevant=document_relevant,
             segments=segments,
             answer=answer,
             time_taken=time.time() - start,
         )
-        
-        
+
     def __call__(self, X: Sample, docs: Dict[str, str], Y: Label = None) -> Label:
         """
         Call function to generate a response given a Sample and a Dict of doc ids to text.
@@ -247,12 +261,12 @@ class ConvRef:
             Label: The generated response
         """
         start = time.time()
-        doc_context = "\n".join(
-            [f"<div>{docs[doc_id]}</div>" for doc_id in X.document_ids]
-        )
         if self.llm_only:
             return self._run_llm_only_approach(X, docs, start)
         else:
+            doc_context = "\n".join(
+                [f"<div>{docs[doc_id]}</div>" for doc_id in X.document_ids]
+            )
             return self._run_ours_approach(X, docs, start, doc_context, Y)
 
     def load_summary_trees(self, summary_trees_fp: str) -> None:

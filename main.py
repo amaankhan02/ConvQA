@@ -31,6 +31,12 @@ def parse_args() -> Arguments:
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--no_summary_tree", action="store_true")
     # parser.add_argument("--no_dialogue_KG", action="store_true")
+    
+    # Stage 1 and Stage 2 ablation flags
+    parser.add_argument("--use_gt_segments", action="store_true", 
+                        help="Flag for Stage 1 ablation. Use GT segments instead of searching for it.")
+    parser.add_argument("--use_gt_doc_relevancy", action="store_true", 
+                        help="Flag for Stage 2 ablation. Use GT document relevancy instead of computing it.")
 
     # Results
     parser.add_argument("--exp_name", default="", type=str)
@@ -47,7 +53,7 @@ if __name__ == "__main__":
 
     dataset = Dataset(args.dataset)
 
-    method = ConvRef(args.model, args.llm_only, args.strict)
+    method = ConvRef(args.model, args.llm_only, args.strict, args.use_gt_segments, args.use_gt_doc_relevancy)
 
     scorer = Scorer(fp)
 
