@@ -1,5 +1,9 @@
 # ConvQA
 Final Project for Conversational AI Project
+**Members**: 
+- Amaan Khan (amaanmk2)
+- Eunice Chan (ecchan2)
+- Yi-Chia Chang (yichia3)
 
 ## Download the datasets
 ```
