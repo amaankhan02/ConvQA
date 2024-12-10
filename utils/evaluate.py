@@ -38,7 +38,7 @@ def run_inference_and_evaluate(
     for i, x in tqdm(enumerate(X)):
         if i < len(Y_hat):
             continue
-        Y_hat.append(method(x, docs))
+        Y_hat.append(method(x, docs, Y[i]))
         print(i, len(X), Y_hat[-1])
 
         # Save generated output
